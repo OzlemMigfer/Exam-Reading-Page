@@ -19,7 +19,7 @@
             </div>
             <div class="dropdown">
                 <span>Sınıf Şubesi:</span>
-                <select id="branchSelect" v-model="selectedBranch" :disabled="branches.length == 0" :required="true">
+                <select id="branchSelect" v-model="selectedBranch"  :required="true">
                     <option value="">Sınıf Şubesi Seçiniz</option>
                     <option v-for="(branch,branchIndex) in branches" :key="branch.id" :value="branchIndex">{{ branchIndex }}{{ branch.name }}</option>
                 </select>
@@ -31,8 +31,34 @@
                     <option v-for="(branchIndex) in exams" :key="branchIndex.id">{{ branchIndex }}{{ branchIndex.id }}</option>
                 </select>
             </div>
+            <!-- txt dosyasını yükleyen buton -->
+            <div class="d-md-inline-flex ml-16">
+                <v-btn color="primary" @click="$refs.inputUpload.click()">
+                    Dosya Seç
+                </v-btn>
+                <input 
+                    v-show="false" 
+                    accept=".txt"
+                    ref="inputUpload" 
+                    type="file" 
+                    @change="importTxt" 
+                />
+            </div>
         </div>
-
+        <!-- txt dosyası yüklemek/görüntülemek -->
+        <div class="uploadTxt mt-10 ml-5">
+            <v-data-table
+                class="data-table"
+                id="showStudentData"
+                v-model="showed"
+                item-key="sıra"
+                show-select 
+                :headers="headers"
+                :items="data"
+                short-by="sıra"
+            >
+            </v-data-table>
+        </div>
     </div>
 </template>
 
@@ -43,19 +69,19 @@ export default{
         users: {
             "KullanıcıA":{
                 "1":{
-                    "A":["SINAV1","SINAV2"],
-                    "E":["SINAV9","SINAV10"]
+                    "A":["SINAV1[1,A,ABCDEF]","SINAV2[1,A,BCDEFA]"],
+                    "E":["SINAV9[1,E,CDEFAB]","SINAV10[1,E,DEFABC]"]
                 },
                 "5":{
-                    "B":["SINAV3","SINAV4"]
+                    "B":["SINAV3[5,B,EFABCD]","SINAV4[5,B,FABCDE]"]
                 }
             },
             "KullanıcıB":{
                 "3":{
-                    "C":["SINAV5","SINAV6"]
+                    "C":["SINAV5[3,C,ABCCDE]","SINAV6[3,C,BCCDEA]"]
                 },
                 "7":{
-                    "D":["SINAV7","SINAV8"]
+                    "D":["SINAV7[7,D,CCDEAB]","SINAV8[7,D,CDEABC]"]
                 }
             }
         },
@@ -65,10 +91,42 @@ export default{
         selectedUser:"",
         selectedGrade:"",
         selectedBranch:"",
-        selectedExam:""
+        selectedExam:"",
+        
 
+        students:{
+            "student1":{
+                "name":"Ayşe Korkmaz",
+                "number":"123",
+                "grade":"1",
+                "branch":"A",
+                "exam":"SINAV1"
+            },
+            "student2":{
+                "name":"Ali Sefer",
+                "number":"456",
+                "grade":"5",
+                "branch":"B",
+                "exam":"SINAV3"
+            },
+            "student3":{
+                "name":"Ceylan Gül",
+                "number":"789",
+                "grade":"3",
+                "branch":"C",
+                "exam":"SINAV5"
+            },
+            "student4":{
+                "name":"Hulusi Kent",
+                "number":"902",
+                "grade":"7",
+                "branch":"D",
+                "exam":"SINAV7"
+            }
+        },
     }),
     watch: {
+        //dropdowns
         selectedUser: function() {
             this.grades=[];
             this.branches=[];
@@ -115,5 +173,8 @@ export default{
 }
 .dropdown span {
     display:inline-block;
+}
+.data-table{
+    margin-right: 355px
 }
 </style>
