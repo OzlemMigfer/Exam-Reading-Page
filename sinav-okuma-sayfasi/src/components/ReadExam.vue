@@ -7,21 +7,21 @@
                 <span>Kullanıcı:</span>
                 <select id="userSelect" v-model="selectedUser" :required="true">
                     <option value="">Kullanıcıları Seçiniz</option>
-                    <option v-for="(user,index) in users" :key="user.id" value="index">{{ index }}{{ user.name }}</option>
+                    <option v-for="(user,index) in users" :key="user.id" :value="index">{{ index }}{{ user.name }}</option>
                 </select>
             </div>
             <div class="dropdown">
                 <span>Sınıf Seviyesi:</span>
                 <select id="gradeSelect" v-model="selectedGrade" :disabled="grades.length == 0" :required="true">
                     <option value="">Sınıf Seviyesi Seçiniz</option>
-                    <option v-for="(grade,gradeIndex) in grades" :key="grade.id" value="gradeIndex">{{ gradeIndex }}{{ grade.name }}</option>
+                    <option v-for="(grade,gradeIndex) in grades" :key="grade.id" :value="gradeIndex">{{ gradeIndex }}{{ grade.name }}</option>
                 </select>
             </div>
             <div class="dropdown">
                 <span>Sınıf Şubesi:</span>
                 <select id="branchSelect" v-model="selectedBranch" :disabled="branches.length == 0" :required="true">
                     <option value="">Sınıf Şubesi Seçiniz</option>
-                    <option v-for="(branch,branchIndex) in branches" :key="branch.id" value="branchIndex">{{ branchIndex }}{{ branch.name }}</option>
+                    <option v-for="(branch,branchIndex) in branches" :key="branch.id" :value="branchIndex">{{ branchIndex }}{{ branch.name }}</option>
                 </select>
             </div>
             <div class="dropdown">
@@ -43,14 +43,21 @@ export default{
         users: {
             "KullanıcıA":{
                 "1":{
-                    "A":["SINAV1","SINAV2","SINAV3"],
-                    "B":["SINAV4","SINAV5","SINAV6"],
+                    "A":["SINAV1","SINAV2"],
+                    "E":["SINAV9","SINAV10"]
                 },
                 "5":{
-                    "C":["SINAV1","SINAV2"],
-                    "D":["SINAV4","SINAV5","SINAV6"],
+                    "B":["SINAV3","SINAV4"]
                 }
             },
+            "KullanıcıB":{
+                "3":{
+                    "C":["SINAV5","SINAV6"]
+                },
+                "7":{
+                    "D":["SINAV7","SINAV8"]
+                }
+            }
         },
         grades:[],
         branches:[],
