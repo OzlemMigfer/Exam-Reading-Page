@@ -19,7 +19,7 @@
             </div>
             <div class="dropdown">
                 <span>Sınıf Şubesi:</span>
-                <select id="branchSelect" v-model="selectedBranch"  :required="true">
+                <select id="branchSelect" v-model="selectedBranch" :disabled="branches.length == 0" :required="true">
                     <option value="">Sınıf Şubesi Seçiniz</option>
                     <option v-for="(branch,branchIndex) in branches" :key="branch.id" :value="branchIndex">{{ branchIndex }}{{ branch.name }}</option>
                 </select>
@@ -33,16 +33,18 @@
             </div>
             <!-- txt dosyasını yükleyen buton -->
             <div class="d-md-inline-flex ml-16">
-                <v-btn color="primary" @click="$refs.inputUpload.click()">
+                <v-btn color="primary" @click="$refs.doc.click()">
                     Dosya Seç
                 </v-btn>
                 <input 
                     v-show="false" 
                     accept=".txt"
-                    ref="inputUpload" 
+                    ref="doc"
                     type="file" 
                     @change="importTxt" 
+                    id="upload"
                 />
+                
             </div>
         </div>
         <!-- txt dosyası yüklemek/görüntülemek -->
@@ -51,14 +53,15 @@
                 class="data-table"
                 id="showStudentData"
                 v-model="showed"
-                item-key="sıra"
+                item-key="queue"
                 show-select 
                 :headers="headers"
-                :items="data"
-                short-by="sıra"
+                :items="studentData"
+                short-by="queue"
             >
             </v-data-table>
         </div>
+        <div>{{ content }}</div>
     </div>
 </template>
 
@@ -98,32 +101,46 @@ export default{
             "student1":{
                 "name":"Ayşe Korkmaz",
                 "number":"123",
-                "grade":"1",
-                "branch":"A",
-                "exam":"SINAV1"
+                "class":"1",
+                "branchName":"A",
+                "examName":"SINAV1"
             },
             "student2":{
                 "name":"Ali Sefer",
                 "number":"456",
-                "grade":"5",
-                "branch":"B",
-                "exam":"SINAV3"
+                "class":"5",
+                "branchName":"B",
+                "examName":"SINAV3"
             },
             "student3":{
                 "name":"Ceylan Gül",
                 "number":"789",
-                "grade":"3",
-                "branch":"C",
-                "exam":"SINAV5"
+                "class":"3",
+                "branchName":"C",
+                "examName":"SINAV5"
             },
             "student4":{
-                "name":"Hulusi Kent",
+                "name":"Hulusi Doğru",
                 "number":"902",
-                "grade":"7",
-                "branch":"D",
-                "exam":"SINAV7"
+                "class":"7",
+                "branchName":"D",
+                "examName":"SINAV7"
             }
         },
+
+        //txt table
+        headers: [
+            {text: "Sıra", value: "queue"},
+            {text: "Öğrenci No", value: "number"},
+            {text: "Öğrenci Adı", value: "name"},
+            {text: "Cevap Anahtarı", value: "answerKey"},
+            {text: "Puan", value: "score"}
+        ],
+        studentData: [],
+
+        //try txt
+        file: null,
+        content: null,
     }),
     watch: {
         //dropdowns
@@ -157,8 +174,35 @@ export default{
                 this.exams = this.users[this.selectedUser][this.selectedGrade][this.selectedBranch]
             }
         }
+    },
+    methods: {
+        addAutoSortNumbers(){
+            let no = 1;
+            this.studentData.forEach(student => {
+                student.queue = no;
+                no++;
+            });
+        },
+        importTxt(){
+            this.file = this.$refs.doc.files[0];
+            const reader = new FileReader();
+            if(this.file.name.includes(".txt")){
+                reader.onload = (res) => {
+                    this.content = res.target.result;
+                };
+                reader.onerror = (err) =>console.log(err);
+                reader.readAsText(this.file);
+            }else{
+                this.content = "check the console for file output";
+                reader.onload = (res) => {
+                    console.log(res.target.result);
+                };
+                reader.onerror = (err) => console.log(err);
+                reader.readAsText(this.file);
+            }
+        }
     }
-}
+};
 </script>
 
 <style>
@@ -176,5 +220,8 @@ export default{
 }
 .data-table{
     margin-right: 355px
+}
+.pg{
+    display: block;
 }
 </style>
