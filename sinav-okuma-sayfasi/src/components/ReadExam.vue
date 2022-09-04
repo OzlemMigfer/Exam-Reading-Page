@@ -32,36 +32,73 @@
                 </select>
             </div>
             <!-- txt dosyasını yükleyen buton -->
-            <div class="d-md-inline-flex ml-16">
-                <v-btn color="primary" @click="$refs.doc.click()">
-                    Dosya Seç
-                </v-btn>
-                <input 
-                    v-show="false" 
-                    accept=".txt"
-                    ref="doc"
-                    type="file" 
-                    @change="importTxt" 
-                    id="upload"
-                />
-                
-            </div>
+            <input 
+                v-show="true" 
+                accept=".txt"
+                ref="doc"
+                type="file"                 
+                id="upload"
+                class="mt-5 ml-16"
+            />
+            <v-btn 
+                class="" 
+                color="primary" 
+                width="130px" 
+                @click="importTxt"
+            >
+                Oku
+            </v-btn>
         </div>
         <!-- txt dosyası yüklemek/görüntülemek -->
-        <div class="uploadTxt mt-10 ml-5">
-            <v-data-table
-                class="data-table"
-                id="showStudentData"
-                v-model="showed"
-                item-key="queue"
-                show-select 
-                :headers="headers"
-                :items="studentData"
-                short-by="queue"
-            >
-            </v-data-table>
+        <div class="table-buttons">
+            <div class="uploadTxt mt-10 ml-5">
+                <v-card class="data-table">
+                    <v-data-table
+                        item-key="queue"
+                        :headers="headers"
+                        :items="students"
+                    >
+                        <template v-slot:body="{items,headers}">
+                            <tbody>
+                                <tr v-for="(item,idx,k) in items" :key="idx" :value="k"> 
+                                    <td v-for="(header,key) in headers" :key="key" :value="key">
+                                        <v-edit-dialog
+                                            v-model="item[header.value]"
+                                            @save="save"
+                                            @open="open"
+                                            @close="close"
+                                            large      
+                                        >
+                                            {{item[header.value]}}
+                                            <template v-slot:input>
+                                                <v-text-field
+                                                    v-model="item[header.value]"
+                                                    label="Edit"
+                                                    single-line
+                                                ></v-text-field>
+                                            </template>
+                                        </v-edit-dialog>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </template>
+                    </v-data-table>
+                </v-card>
+            </div>
+            <div class="buttons ml-auto">
+                <div class="mt-3 d-flex flex-column-reverse">
+                    <v-btn class="mt-4" color="primary" @click="$refs.doc.click()" width="130px">
+                        Kaydet
+                    </v-btn>
+                    <v-btn class="mt-3" color="primary" @click="$refs.doc.click()" width="130px">
+                        Değerlendir
+                    </v-btn>
+                </div>
+            </div>
         </div>
-        <div>{{ content }}</div>
+        <!-- <div>
+            {{ content }}
+        </div> -->
     </div>
 </template>
 
@@ -97,50 +134,53 @@ export default{
         selectedExam:"",
         
 
-        students:{
-            "student1":{
-                "name":"Ayşe Korkmaz",
-                "number":"123",
-                "class":"1",
-                "branchName":"A",
-                "examName":"SINAV1"
+        students:[
+            {
+                id:1,
+                name:"Ayşe Korkmaz",
+                number:"123",
+                class:"1",
+                branchName:"A",
+                examName:"SINAV1"
             },
-            "student2":{
-                "name":"Ali Sefer",
-                "number":"456",
-                "class":"5",
-                "branchName":"B",
-                "examName":"SINAV3"
+            {
+                id:2,
+                name:"Ali Sefer",
+                number:"456",
+                class:"5",
+                branchName:"B",
+                examName:"SINAV3"
             },
-            "student3":{
-                "name":"Ceylan Gül",
-                "number":"789",
-                "class":"3",
-                "branchName":"C",
-                "examName":"SINAV5"
+            {
+                id:3,
+                name:"Ceylan Gül",
+                number:"789",
+                class:"3",
+                branchName:"C",
+                examName:"SINAV5"
             },
-            "student4":{
-                "name":"Hulusi Doğru",
-                "number":"902",
-                "class":"7",
-                "branchName":"D",
-                "examName":"SINAV7"
+            {
+                id:4,
+                name:"Hulusi Doğru",
+                number:"902",
+                class:"7",
+                branchName:"D",
+                examName:"SINAV7"
             }
-        },
+        ],
 
         //txt table
         headers: [
-            {text: "Sıra", value: "queue"},
+            {text: "Sıra", value: "id"},
             {text: "Öğrenci No", value: "number"},
             {text: "Öğrenci Adı", value: "name"},
             {text: "Cevap Anahtarı", value: "answerKey"},
             {text: "Puan", value: "score"}
         ],
-        studentData: [],
 
         //try txt
         file: null,
-        content: null,
+        content: [],
     }),
     watch: {
         //dropdowns
@@ -176,13 +216,6 @@ export default{
         }
     },
     methods: {
-        addAutoSortNumbers(){
-            let no = 1;
-            this.studentData.forEach(student => {
-                student.queue = no;
-                no++;
-            });
-        },
         importTxt(){
             this.file = this.$refs.doc.files[0];
             const reader = new FileReader();
@@ -192,15 +225,30 @@ export default{
                 };
                 reader.onerror = (err) =>console.log(err);
                 reader.readAsText(this.file);
+                this.readContent();
             }else{
                 this.content = "check the console for file output";
-                reader.onload = (res) => {
-                    console.log(res.target.result);
-                };
-                reader.onerror = (err) => console.log(err);
-                reader.readAsText(this.file);
+                // reader.onload = (res) => {
+                //     console.log(res.target.result);
+                // };
+                // reader.onerror = (err) => console.log(err);
+                // reader.readAsText(this.file);                
             }
-        }
+        },
+        readContent(){
+            //tek tek elemanları gezer
+            // let i;
+            // for(i=3;i<10;i++){
+            //     console.log("Okul No:",this.content[i]);
+            // }
+            this.content;
+        },
+        
+        //edit için
+        save() {},
+        cancel() {},
+        open() {},
+        close() {}
     }
 };
 </script>
@@ -219,9 +267,18 @@ export default{
     display:inline-block;
 }
 .data-table{
-    margin-right: 355px
+    margin-right: 32px
 }
 .pg{
     display: block;
 }
+.uploadTxt{
+    max-width: 85%;
+}
+.buttons{
+    max-width: 11%;
+    margin-top: -350px;
+    margin-left: 30px;
+}
+
 </style>
