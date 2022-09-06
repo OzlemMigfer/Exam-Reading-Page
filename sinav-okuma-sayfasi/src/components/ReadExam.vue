@@ -28,7 +28,7 @@
                 <span>Aktif Sınavlar:</span>
                 <select id="examSelect" v-model="selectedExam" :disabled="exams.length == 0">
                     <option value="">Sınav Seçiniz</option>
-                    <option v-for="(branchIndex) in exams" :key="branchIndex.id">{{ branchIndex }}{{ branchIndex.id }}</option>
+                    <option v-for="(branchIndex,examIndex) in exams" :key="branchIndex.id" :value="examIndex">{{ examIndex }}{{ branchIndex.name }}</option>
                 </select>
             </div>
         </div>
@@ -50,7 +50,7 @@
                     <v-btn 
                         class="mt-4" 
                         color="primary" 
-                        @click="writeToTableExam" 
+                        @click="checkAnswer" 
                         width="130px">
                         Değerlendir
                     </v-btn>
@@ -72,22 +72,10 @@
             <v-card>
             <v-data-table
                 id="upload"
-                item-key="number"
                 :headers="headers"
-                :items="students"
+                :items="studentData"
+                class="elevation-1"
             > 
-                <template v-slot:[`item.number`]="{ item }">
-                    {{ writeToTableNumber(item) }}
-                </template>
-                <template v-slot:[`item.name`]="{ item }">
-                    {{ writeToTableName(item) }}
-                </template>
-                <template v-slot:[`item.optic`]="{ item }">
-                    {{ writeToTableOptic(item) }}
-                </template>
-                <template v-slot:[`item.point`]="{ item }">
-                    {{ writeToTableExam(item) }}
-                </template>
             </v-data-table>
         </v-card>
         </div>
@@ -101,19 +89,74 @@ export default{
         users: {
             "KullanıcıA":{
                 "1":{
-                    "A":["SINAV1[1,A,ABCDEF]","SINAV2[1,A,BCDEFA]"],
-                    "E":["SINAV9[1,E,CDEFAB]","SINAV10[1,E,DEFABC]"]
+                    "A":{
+                        "SINAV1":{
+                            "sınıf":"1",
+                            "sube":"A",
+                            "cevap":"ABCDEF"
+                        },
+                        "SINAV2":{
+                            "sınıf":"1",
+                            "sube":"A",
+                            "cevap":"BCDEFA"
+                        } 
+                    },
+                    "E":{
+                        "SINAV9":{
+                            "sınıf":"1",
+                            "sube":"E",
+                            "cevap":"CDEFAB"
+                        },
+                        "SINAV10":{
+                            "sınıf":"1",
+                            "sube":"E",
+                            "cevap":"DEFABC"
+                        }
+                    }
                 },
                 "5":{
-                    "B":["SINAV3[5,B,EFABCD]","SINAV4[5,B,FABCDE]"]
+                    "B":{
+                        "SINAV3":{
+                            "sınıf":"5",
+                            "sube":"B",
+                            "cevap":"EFABCD"
+                        },
+                        "SINAV4":{
+                            "sınıf":"5",
+                            "sube":"B",
+                            "cevap":"FABCDE"
+                        } 
+                    }
                 }
             },
             "KullanıcıB":{
                 "3":{
-                    "C":["SINAV5[3,C,ABCCDE]","SINAV6[3,C,BCCDEA]"]
+                    "C":{
+                        "SINAV5":{
+                            "sınıf":"3",
+                            "sube":"C",
+                            "cevap":"ABCCDE"
+                        },
+                        "SINAV6":{
+                            "sınıf":"3",
+                            "sube":"C",
+                            "cevap":"BCCDEA"
+                        } 
+                    }
                 },
                 "7":{
-                    "D":["SINAV7[7,D,CCDEAB]","SINAV8[7,D,CDEABC]"]
+                    "D":{
+                        "SINAV7":{
+                            "sınıf":"7",
+                            "sube":"D",
+                            "cevap":"CCDEAB"
+                        },
+                        "SINAV8":{
+                            "sınıf":"7",
+                            "sube":"D",
+                            "cevap":"CDEABC"
+                        } 
+                    }
                 }
             }
         },
@@ -136,7 +179,6 @@ export default{
                 class:"1",
                 branchName:"A",
                 examName:"SINAV1",
-                optic:"ABCDEF",
                 point:""
             },
             {
@@ -147,7 +189,6 @@ export default{
                 class:"5",
                 branchName:"B",
                 examName:"SINAV3",
-                optic:"EFABCD ",
                 point:""
             },
             {
@@ -158,7 +199,6 @@ export default{
                 class:"3",
                 branchName:"C",
                 examName:"SINAV5",
-                optic:"ABCCDE ",
                 point:""
             },
             {
@@ -169,7 +209,6 @@ export default{
                 class:"7",
                 branchName:"D",
                 examName:"SINAV7",
-                optic:"CCDEAB ",
                 point:""
             }
         ],
@@ -226,102 +265,23 @@ export default{
             if(this.file.name.includes(".txt")){
                 reader.onload = (res) => {
                     this.content = res.target.result;
+                    this.getStudentsData(); 
                 };
                 reader.readAsText(this.file);
             }else{
-                this.content = "check the console for file output";            
+                this.content = "check the console for file output";           
             }
         },
-        // okul numarası karşılaştırması
-        readTxtForNumber(){
-            console.log(typeof this.content)
-            var lines = this.content.split('\n');
-            for(var line = 0; line < lines.length; line++){
-                var oneLine = lines[line];
-
-                for(var value = 0; value<3 ;value++){
-                    var numbersTxt = oneLine[0]+oneLine[1]+oneLine[2];
-                    var numberLines = numbersTxt.split('\n');
-                    for(var i = 0;i<numberLines.length;i++){
-                        for(var k =0 ;k<this.students.length;k++){
-                            if(numberLines[i]==this.students[k].number)
-                            var comeNumber = numberLines[i];
-                            console.log("Nolar :",comeNumber);
-                        }                               
-                    }
+        getStudentsData(){
+            this.students.forEach((value) => {
+                if(this.selectedUser==value.userGroup && this.selectedGrade==value.class && this.selectedExam==value.examName){
+                    this.studentData=`${value.number}`;
                 }
-            }
-            
+            });
         },
-        // cevap anahtarı için
-        readTxtForAnswerKey(){
-            var lines = this.content.split('\n');
-            for(var line = 0; line < lines.length; line++){
-                var oneLine = lines[line];
-                   
-                for(var b = 3;b<oneLine.length;b++){
-                    var answerIndex = oneLine[b];//indisli alıyor txt deki---öğrenci cevapları
-                    console.log("Öğrenci"+b+":",answerIndex);
-                }     
-            }
-            for(var m = 0;m<this.students.length;m++){
-                var opticAnswer=this.students[m].optic;
-                for(b = 0;b<opticAnswer.length;b++){
-                    var opticIndex = opticAnswer[b];//indisli alıyor json daki---cevap anahtarı          
-                    console.log("Cevapa"+b+":",opticIndex);                    
-                }           
-            }           
-        },
-        //dropdown ve students daki dataları kıyaslayıp tabloya veri göndermek
-        writeToTableNumber(sendNumber){
-            for(var h = 0;h<this.students.length;h++){
-                if(this.selectedUser==this.students[h].userGroup && 
-                    this.selectedGrade==this.students[h].class || 
-                    this.selectedBranch==this.students[h].branchName && 
-                    this.selectedExam==this.students[h].examName){
+        checkAnswer(){
 
-                        sendNumber = this.students[h];
-
-                        return sendNumber.number;
-
-                }
-            }
-        },
-        writeToTableName(sendName){
-            for(var h = 0;h<this.students.length;h++){
-                if(this.selectedUser==this.students[h].userGroup && 
-                    this.selectedGrade==this.students[h].class ||
-                    this.selectedBranch==this.students[h].branchName && 
-                    this.selectedExam==this.students[h].examName){
-
-                        sendName = this.students[h];
-
-                        return sendName.name;
-                }
-            }
-        },
-        writeToTableOptic(sendOptic){
-            for(var h = 0;h<this.students.length;h++){
-                if(this.selectedUser==this.students[h].userGroup && 
-                    this.selectedGrade==this.students[h].class || 
-                    this.selectedBranch==this.students[h].branchName && 
-                    this.selectedExam==this.students[h].examName){
-
-                        sendOptic = this.students[h];
-
-                        return sendOptic.optic;
-                }
-            }
-        },
-        writeToTableExam(){
-        
-        },
-        
-        //edit için
-        save() {},
-        cancel() {},
-        open() {},
-        close() {}
+        }
     }
 };
 </script>
