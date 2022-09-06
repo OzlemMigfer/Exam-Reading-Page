@@ -27,78 +27,69 @@
             <div class="dropdown">
                 <span>Aktif Sınavlar:</span>
                 <select id="examSelect" v-model="selectedExam" :disabled="exams.length == 0">
-                    <option value="">Aktif Sınav Seçiniz</option>
+                    <option value="">Sınav Seçiniz</option>
                     <option v-for="(branchIndex) in exams" :key="branchIndex.id">{{ branchIndex }}{{ branchIndex.id }}</option>
                 </select>
             </div>
-            <!-- txt dosyasını yükleyen buton -->
+        </div>
+        <div class="input d-flex justify-center mt-n9">
             <input 
                 v-show="true" 
                 accept=".txt"
                 ref="doc"
-                type="file"                 
-                id="upload"
-                class="mt-5 ml-16"
+                type="file"          
             />
-            <v-btn 
-                class="" 
-                color="primary" 
-                width="130px" 
-                @click="importTxt"
-            >
-                Oku
-            </v-btn>
         </div>
         <!-- txt dosyası yüklemek/görüntülemek -->
         <div class="table-buttons">
-            <div class="uploadTxt mt-10 ml-5">
-                <v-card class="data-table">
-                    <v-data-table
-                        item-key="queue"
-                        :headers="headers"
-                        :items="students"
-                    >
-                        <template v-slot:body="{items,headers}">
-                            <tbody>
-                                <tr v-for="(item,idx,k) in items" :key="idx" :value="k"> 
-                                    <td v-for="(header,key) in headers" :key="key" :value="key">
-                                        <v-edit-dialog
-                                            v-model="item[header.value]"
-                                            @save="save"
-                                            @open="open"
-                                            @close="close"
-                                            large      
-                                        >
-                                            {{item[header.value]}}
-                                            <template v-slot:input>
-                                                <v-text-field
-                                                    v-model="item[header.value]"
-                                                    label="Edit"
-                                                    single-line
-                                                ></v-text-field>
-                                            </template>
-                                        </v-edit-dialog>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </template>
-                    </v-data-table>
-                </v-card>
-            </div>
             <div class="buttons ml-auto">
                 <div class="mt-3 d-flex flex-column-reverse">
                     <v-btn class="mt-4" color="primary" @click="$refs.doc.click()" width="130px">
                         Kaydet
                     </v-btn>
-                    <v-btn class="mt-3" color="primary" @click="$refs.doc.click()" width="130px">
+                    <v-btn 
+                        class="mt-4" 
+                        color="primary" 
+                        @click="writeToTableExam" 
+                        width="130px">
                         Değerlendir
+                    </v-btn>
+                    <v-btn 
+                        class="mr-5"
+                        id="upload"
+                        color="primary" 
+                        width="130px" 
+                        @click="importTxt"
+                    >
+                        Oku
                     </v-btn>
                 </div>
             </div>
         </div>
-        <!-- <div>
-            {{ content }}
-        </div> -->
+
+        <!-- yeni tablo -->
+        <div class="dataTable ml-7 mt-n16">
+            <v-card>
+            <v-data-table
+                id="upload"
+                :headers="headers"
+                :items="students"
+            > 
+                <template v-slot:item.number="{item}">
+                    {{ writeToTableNumber(item) }}
+                </template>
+                <template v-slot:item.name="{item}">
+                    {{ writeToTableName(item) }}
+                </template>
+                <template v-slot:item.optic="{item}">
+                    {{ writeToTableOptic(item) }}
+                </template>
+                <template v-slot:item.point="{item}">
+                    {{ writeToTableExam(item) }}
+                </template>
+            </v-data-table>
+        </v-card>
+        </div>
     </div>
 </template>
 
@@ -128,6 +119,8 @@ export default{
         grades:[],
         branches:[],
         exams:[],
+        studentData:[],
+        students:"",
         selectedUser:"",
         selectedGrade:"",
         selectedBranch:"",
@@ -139,43 +132,54 @@ export default{
                 id:1,
                 name:"Ayşe Korkmaz",
                 number:"123",
+                userGroup:"KullanıcıA",
                 class:"1",
                 branchName:"A",
-                examName:"SINAV1"
+                examName:"SINAV1",
+                optic:"ABCDEF ",
+                point:""
             },
             {
                 id:2,
                 name:"Ali Sefer",
                 number:"456",
+                userGroup:"KullanıcıA",
                 class:"5",
                 branchName:"B",
-                examName:"SINAV3"
+                examName:"SINAV3",
+                optic:"EFABCD ",
+                point:""
             },
             {
                 id:3,
                 name:"Ceylan Gül",
                 number:"789",
+                userGroup:"KullanıcıB",
                 class:"3",
                 branchName:"C",
-                examName:"SINAV5"
+                examName:"SINAV5",
+                optic:"ABCCDE ",
+                point:""
             },
             {
                 id:4,
                 name:"Hulusi Doğru",
                 number:"902",
+                userGroup:"KullanıcıB",
                 class:"7",
                 branchName:"D",
-                examName:"SINAV7"
+                examName:"SINAV7",
+                optic:"CCDEAB ",
+                point:""
             }
         ],
 
         //txt table
         headers: [
-            {text: "Sıra", value: "id"},
             {text: "Öğrenci No", value: "number"},
             {text: "Öğrenci Adı", value: "name"},
-            {text: "Cevap Anahtarı", value: "answerKey"},
-            {text: "Puan", value: "score"}
+            {text: "Cevap Anahtarı", value: "optic"},
+            {text: "Puan", value: "point"}
         ],
 
         //try txt
@@ -222,26 +226,163 @@ export default{
             if(this.file.name.includes(".txt")){
                 reader.onload = (res) => {
                     this.content = res.target.result;
+
+                    // this.readTxtForNumber();
+                    // this.readTxtForAnswerKey();  
+                    // this.writeToTableExam();
+
                 };
-                reader.onerror = (err) =>console.log(err);
                 reader.readAsText(this.file);
-                this.readContent();
             }else{
-                this.content = "check the console for file output";
-                // reader.onload = (res) => {
-                //     console.log(res.target.result);
-                // };
-                // reader.onerror = (err) => console.log(err);
-                // reader.readAsText(this.file);                
+                this.content = "check the console for file output";            
             }
         },
-        readContent(){
-            //tek tek elemanları gezer
-            // let i;
-            // for(i=3;i<10;i++){
-            //     console.log("Okul No:",this.content[i]);
-            // }
-            this.content;
+        // okul numarası karşılaştırması
+        readTxtForNumber(){
+            var lines = this.content.split('\n');
+            for(var line = 0; line < lines.length; line++){
+                var oneLine = lines[line];
+
+                for(var value = 0; value<3 ;value++){
+                    var numberTxt = oneLine[0];
+                    var numberTxt1 = oneLine[1];
+                    var numberTxt2 = oneLine[2];
+
+                    var numbersTxt = numberTxt+numberTxt1+numberTxt2;
+                            
+                    var numberLines = numbersTxt.split('\n');
+                    for(var i = 0;i<numberLines.length;i++){
+                        for(var k =0 ;k<this.students.length;k++){
+                            if(numberLines[i]==this.students[k].number)
+                            var comeNumber = numberLines[i];
+                            console.log("Nolar :",comeNumber);
+                        }                               
+                    }
+                }
+            }
+            
+        },
+        // cevap anahtarı için
+        readTxtForAnswerKey(){
+            var lines = this.content.split('\n');
+            for(var line = 0; line < lines.length; line++){
+                var oneLine = lines[line];
+                   
+                for(var b = 3;b<oneLine.length;b++){
+                    var answerIndex = oneLine[b];//indisli alıyor txt deki---öğrenci cevapları
+                    console.log("Öğrenci"+b+":",answerIndex);
+                }     
+            }
+            for(var m = 0;m<this.students.length;m++){
+                var opticAnswer=this.students[m].optic;
+                for(var b = 0;b<opticAnswer.length;b++){
+                    var opticIndex = opticAnswer[b];//indisli alıyor json daki---cevap anahtarı          
+                    console.log("Cevapa"+b+":",opticIndex);                    
+                }           
+            }           
+        },
+        //dropdown ve students daki dataları kıyaslayıp tabloya veri göndermek
+        writeToTableNumber(sendNumber){
+            for(var h = 0;h<this.students.length;h++){
+                if(this.selectedUser==this.students[h].userGroup && 
+                    this.selectedGrade==this.students[h].class || 
+                    this.selectedBranch==this.students[h].branchName && 
+                    this.selectedExam==this.students[h].examName){
+
+                        var sendNumber = this.students[h];
+
+                        // console.log("called");
+
+                        return sendNumber.number;
+
+                        // console.log(sendNumber,sendName);
+                }
+            }
+        },
+        writeToTableName(sendName){
+            for(var h = 0;h<this.students.length;h++){
+                if(this.selectedUser==this.students[h].userGroup && 
+                    this.selectedGrade==this.students[h].class ||
+                    this.selectedBranch==this.students[h].branchName && 
+                    this.selectedExam==this.students[h].examName){
+
+                        var sendName = this.students[h];
+
+                        // console.log("called");
+
+                        return sendName.name;
+
+                        // console.log(sendNumber,sendName);
+                }
+            }
+        },
+        writeToTableOptic(sendOptic){
+            for(var h = 0;h<this.students.length;h++){
+                if(this.selectedUser==this.students[h].userGroup && 
+                    this.selectedGrade==this.students[h].class || 
+                    this.selectedBranch==this.students[h].branchName && 
+                    this.selectedExam==this.students[h].examName){
+
+                        var sendOptic = this.students[h];
+
+                        // console.log("called");
+
+                        return sendOptic.optic;
+
+                        // console.log(sendNumber,sendName);
+                }
+            }
+        },
+        writeToTableExam(sendPoint){
+            for(var h = 0;h<this.students.length;h++){
+                if(this.selectedUser==this.students[h].userGroup && 
+                    this.selectedGrade==this.students[h].class || 
+                    this.selectedBranch==this.students[h].branchName && 
+                    this.selectedExam==this.students[h].examName){
+
+                        var theOptic = this.students[h].optic;//cevap anahtarı dizi olarak geldi--json dan
+                        var theNumber = this.students[h].number;//öğrenci nosu --json dan
+
+                        console.log("Optik:",theOptic);
+                        // console.log("No:",theNumber);
+                }
+            }
+ 
+            var lines = this.content.split('\n');
+            for(var line = 0; line < lines.length; line++){
+                var oneLine = lines[line];
+
+                for(var value = 0; value<3 ;value++){
+                    var numberTxt = oneLine[0];
+                    var numberTxt1 = oneLine[1];
+                    var numberTxt2 = oneLine[2];
+
+                    var numbersTxt = numberTxt+numberTxt1+numberTxt2;
+                    // console.log("sat:",numbersTxt);
+                            
+                    var numberLines = numbersTxt.split('\n');
+                    for(var i = 0;i<numberLines.length;i++){
+                        // var comeLine = numberLines[i];
+                        if(numberLines[i]==theNumber){
+                            console.log("NO3:",numberLines[i]);
+                            console.log("satır:",oneLine); 
+                        }
+                    }
+                }
+            }
+
+            var total =0;
+            for(var b = 3;b<=oneLine.length;b++){
+                for(var k =1;k<theOptic.length;k++){
+                    if(oneLine[b]==theOptic[k]){
+                        total++;
+                    }  
+                }
+            }
+            console.log("puan: ",total);
+            var sendPoint = total;
+
+            return sendPoint;
         },
         
         //edit için
@@ -259,7 +400,7 @@ export default{
 }
 .dropdown {
   display: inline-flex;
-  margin-left:20px;
+  margin-left:30px;
   padding: 10px 0px;
   border-bottom: 1px solid #DDD;
 }
@@ -272,13 +413,15 @@ export default{
 .pg{
     display: block;
 }
-.uploadTxt{
-    max-width: 85%;
+.dataTable{
+    max-width: 84%;
 }
 .buttons{
     max-width: 11%;
-    margin-top: -350px;
+    margin-top: -40px;
     margin-left: 30px;
 }
-
+.input{
+    margin-left: 60% ;
+}
 </style>
