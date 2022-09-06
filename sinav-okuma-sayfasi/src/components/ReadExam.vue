@@ -275,9 +275,23 @@ export default{
         getStudentsData(){
             this.students.forEach((value) => {
                 if(this.selectedUser==value.userGroup && this.selectedGrade==value.class && this.selectedExam==value.examName){
-                    this.studentData=`${value.number}`;
-                }
-            });
+                    // this.getStudentsAnswerKey();
+                    this.studentData.push(value);
+                    
+                    var lines = this.content.split('\n');
+                    for(var line = 0; line < lines.length; line++){
+                    var allLine = lines[line];
+
+                    var allLineNumber=allLine.slice(0,3);
+                        
+                    var allLineAnswer=allLine.slice(3,9);
+                        if(value.number==allLineNumber){ 
+                            console.log("CA:",value.optic=allLineAnswer);
+                            // this.studentData.push(allLineAnswer);
+                        }
+                    }
+                }            
+            });  
         },
         checkAnswer(){
 
