@@ -72,19 +72,20 @@
             <v-card>
             <v-data-table
                 id="upload"
+                item-key="number"
                 :headers="headers"
                 :items="students"
             > 
-                <template v-slot:item.number="{item}">
+                <template v-slot:[`item.number`]="{ item }">
                     {{ writeToTableNumber(item) }}
                 </template>
-                <template v-slot:item.name="{item}">
+                <template v-slot:[`item.name`]="{ item }">
                     {{ writeToTableName(item) }}
                 </template>
-                <template v-slot:item.optic="{item}">
+                <template v-slot:[`item.optic`]="{ item }">
                     {{ writeToTableOptic(item) }}
                 </template>
-                <template v-slot:item.point="{item}">
+                <template v-slot:[`item.point`]="{ item }">
                     {{ writeToTableExam(item) }}
                 </template>
             </v-data-table>
@@ -120,7 +121,6 @@ export default{
         branches:[],
         exams:[],
         studentData:[],
-        students:"",
         selectedUser:"",
         selectedGrade:"",
         selectedBranch:"",
@@ -136,7 +136,7 @@ export default{
                 class:"1",
                 branchName:"A",
                 examName:"SINAV1",
-                optic:"ABCDEF ",
+                optic:"ABCDEF",
                 point:""
             },
             {
@@ -226,11 +226,6 @@ export default{
             if(this.file.name.includes(".txt")){
                 reader.onload = (res) => {
                     this.content = res.target.result;
-
-                    // this.readTxtForNumber();
-                    // this.readTxtForAnswerKey();  
-                    // this.writeToTableExam();
-
                 };
                 reader.readAsText(this.file);
             }else{
@@ -239,17 +234,13 @@ export default{
         },
         // okul numarası karşılaştırması
         readTxtForNumber(){
+            console.log(typeof this.content)
             var lines = this.content.split('\n');
             for(var line = 0; line < lines.length; line++){
                 var oneLine = lines[line];
 
                 for(var value = 0; value<3 ;value++){
-                    var numberTxt = oneLine[0];
-                    var numberTxt1 = oneLine[1];
-                    var numberTxt2 = oneLine[2];
-
-                    var numbersTxt = numberTxt+numberTxt1+numberTxt2;
-                            
+                    var numbersTxt = oneLine[0]+oneLine[1]+oneLine[2];
                     var numberLines = numbersTxt.split('\n');
                     for(var i = 0;i<numberLines.length;i++){
                         for(var k =0 ;k<this.students.length;k++){
@@ -275,7 +266,7 @@ export default{
             }
             for(var m = 0;m<this.students.length;m++){
                 var opticAnswer=this.students[m].optic;
-                for(var b = 0;b<opticAnswer.length;b++){
+                for(b = 0;b<opticAnswer.length;b++){
                     var opticIndex = opticAnswer[b];//indisli alıyor json daki---cevap anahtarı          
                     console.log("Cevapa"+b+":",opticIndex);                    
                 }           
@@ -289,13 +280,10 @@ export default{
                     this.selectedBranch==this.students[h].branchName && 
                     this.selectedExam==this.students[h].examName){
 
-                        var sendNumber = this.students[h];
-
-                        // console.log("called");
+                        sendNumber = this.students[h];
 
                         return sendNumber.number;
 
-                        // console.log(sendNumber,sendName);
                 }
             }
         },
@@ -306,13 +294,9 @@ export default{
                     this.selectedBranch==this.students[h].branchName && 
                     this.selectedExam==this.students[h].examName){
 
-                        var sendName = this.students[h];
-
-                        // console.log("called");
+                        sendName = this.students[h];
 
                         return sendName.name;
-
-                        // console.log(sendNumber,sendName);
                 }
             }
         },
@@ -323,66 +307,14 @@ export default{
                     this.selectedBranch==this.students[h].branchName && 
                     this.selectedExam==this.students[h].examName){
 
-                        var sendOptic = this.students[h];
-
-                        // console.log("called");
+                        sendOptic = this.students[h];
 
                         return sendOptic.optic;
-
-                        // console.log(sendNumber,sendName);
                 }
             }
         },
-        writeToTableExam(sendPoint){
-            for(var h = 0;h<this.students.length;h++){
-                if(this.selectedUser==this.students[h].userGroup && 
-                    this.selectedGrade==this.students[h].class || 
-                    this.selectedBranch==this.students[h].branchName && 
-                    this.selectedExam==this.students[h].examName){
-
-                        var theOptic = this.students[h].optic;//cevap anahtarı dizi olarak geldi--json dan
-                        var theNumber = this.students[h].number;//öğrenci nosu --json dan
-
-                        console.log("Optik:",theOptic);
-                        // console.log("No:",theNumber);
-                }
-            }
- 
-            var lines = this.content.split('\n');
-            for(var line = 0; line < lines.length; line++){
-                var oneLine = lines[line];
-
-                for(var value = 0; value<3 ;value++){
-                    var numberTxt = oneLine[0];
-                    var numberTxt1 = oneLine[1];
-                    var numberTxt2 = oneLine[2];
-
-                    var numbersTxt = numberTxt+numberTxt1+numberTxt2;
-                    // console.log("sat:",numbersTxt);
-                            
-                    var numberLines = numbersTxt.split('\n');
-                    for(var i = 0;i<numberLines.length;i++){
-                        // var comeLine = numberLines[i];
-                        if(numberLines[i]==theNumber){
-                            console.log("NO3:",numberLines[i]);
-                            console.log("satır:",oneLine); 
-                        }
-                    }
-                }
-            }
-
-            var total =0;
-            for(var b = 3;b<=oneLine.length;b++){
-                for(var k =1;k<theOptic.length;k++){
-                    if(oneLine[b]==theOptic[k]){
-                        total++;
-                    }  
-                }
-            }
-            console.log("puan: ",total);
-            var sendPoint = total;
-
-            return sendPoint;
+        writeToTableExam(){
+        
         },
         
         //edit için
