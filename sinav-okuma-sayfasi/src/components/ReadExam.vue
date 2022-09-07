@@ -44,14 +44,20 @@
         <div class="table-buttons">
             <div class="buttons ml-auto">
                 <div class="mt-3 d-flex flex-column-reverse">
-                    <v-btn class="mt-4" color="primary" @click="$refs.doc.click()" width="130px">
+                    <v-btn 
+                        class="mt-4" 
+                        color="primary" 
+                        @click="saveToJson" 
+                        width="130px"
+                    >
                         Kaydet
                     </v-btn>
                     <v-btn 
                         class="mt-4" 
                         color="primary" 
                         @click="checkAnswer" 
-                        width="130px">
+                        width="130px"
+                    >
                         Değerlendir
                     </v-btn>
                     <v-btn 
@@ -75,16 +81,23 @@
                 :headers="headers"
                 :items="studentData"
                 class="elevation-1"
+                item-key="sıra"
+                sort-by="sıra"
             > 
             </v-data-table>
         </v-card>
         </div>
+
+        <template>
+            <div id="jsonField"></div>
+        </template>
     </div>
 </template>
 
 
 <script>
 export default{
+    jsonData: JSON,
     data: () => ({
         users: {
             "KullanıcıA":{
@@ -168,6 +181,49 @@ export default{
         selectedGrade:"",
         selectedBranch:"",
         selectedExam:"",
+
+        answerKey:[
+            {
+                exam:"SINAV1",
+                answer:"ABCDEF"
+            },
+            {
+                exam:"SINAV2",
+                answer:"BCDEFA"
+            },
+            {
+                exam:"SINAV3",
+                answer:"EFABCD"
+            },
+            {
+                exam:"SINAV4",
+                answer:"FABCDE"
+            },
+            {
+                exam:"SINAV5",
+                answer:"ABCCDE"
+            },
+            {
+                exam:"SINAV6",
+                answer:"BCCDEA"
+            },
+            {
+                exam:"SINAV7",
+                answer:"CCDEAB"
+            },
+            {
+                exam:"SINAV8",
+                answer:"CDEABC"
+            },
+            {
+                exam:"SINAV9",
+                answer:"CDEFAB"
+            },
+            {
+                exam:"SINAV10",
+                answer:"DEFABC"
+            }
+        ],
         
 
         students:[
@@ -215,6 +271,7 @@ export default{
 
         //txt table
         headers: [
+            {text: "Sıra", value: "sıra"},
             {text: "Öğrenci No", value: "number"},
             {text: "Öğrenci Adı", value: "name"},
             {text: "Cevap Anahtarı", value: "optic"},
@@ -266,6 +323,7 @@ export default{
                 reader.onload = (res) => {
                     this.content = res.target.result;
                     this.getStudentsData(); 
+                    this.addAutoSortNumbers();
                 };
                 reader.readAsText(this.file);
             }else{
@@ -275,26 +333,51 @@ export default{
         getStudentsData(){
             this.students.forEach((value) => {
                 if(this.selectedUser==value.userGroup && this.selectedGrade==value.class && this.selectedExam==value.examName){
-                    // this.getStudentsAnswerKey();
                     this.studentData.push(value);
                     
                     var lines = this.content.split('\n');
                     for(var line = 0; line < lines.length; line++){
-                    var allLine = lines[line];
+                        var allLine = lines[line];
 
-                    var allLineNumber=allLine.slice(0,3);
+                        var allLineNumber=allLine.slice(0,3);
                         
-                    var allLineAnswer=allLine.slice(3,9);
+                        var allLineAnswer=allLine.slice(3,9);
                         if(value.number==allLineNumber){ 
-                            console.log("CA:",value.optic=allLineAnswer);
-                            // this.studentData.push(allLineAnswer);
+                            value.optic=allLineAnswer;
                         }
                     }
                 }            
             });  
         },
         checkAnswer(){
+            this.studentData.forEach((key) => {
+                var studentAnswer = key.optic;
 
+                this.answerKey.forEach((index) => {
+                    if(this.selectedExam==index.exam){
+                        var answerkey = index.answer;
+
+                        let total=0;
+                        for(var i=0;i<answerkey.length;i++){
+                            if(studentAnswer[i]==answerkey[i]){
+                                total++; 
+                            }
+                        }
+                        key.point=total;
+                    }
+                });           
+            });
+        },
+        saveToJson(){
+            this.jsonData = JSON.stringify(this.studentData);
+            document.getElementById('jsonField').innerHTML = this.jsonData;
+        },
+        addAutoSortNumbers(){
+            let no = 1;
+            this.studentData.forEach((key) => {
+                key.sıra = no;
+                no++;
+            });
         }
     }
 };
