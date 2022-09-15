@@ -28,7 +28,7 @@
                 <span>Aktif Sınavlar:</span>
                 <select id="examSelect" v-model="selectedExam" :disabled="exams.length == 0">
                     <option value="">Sınav Seçiniz</option>
-                    <option v-for="(branchIndex,examIndex) in exams" :key="branchIndex.id" :value="examIndex">{{ examIndex }}{{ branchIndex.name }}</option>
+                    <option v-for="(branchIndex) in exams" :key="branchIndex.id">{{ branchIndex }}{{ branchIndex.name }}</option>
                 </select>
             </div>
         </div>
@@ -55,7 +55,6 @@
                     <v-btn 
                         class="mt-4" 
                         color="primary" 
-                        @click="checkAnswer" 
                         width="130px"
                     >
                         Değerlendir
@@ -76,14 +75,14 @@
         <!-- yeni tablo -->
         <div class="dataTable ml-7 mt-n16">
             <v-card>
-            <v-data-table
+            <v-data-table            
                 id="upload"
                 :headers="headers"
                 :items="studentData"
                 class="elevation-1"
                 item-key="sıra"
                 sort-by="sıra"
-            > 
+            >    
                 <template v-slot:top>
                     <v-spacer></v-spacer>
                         <v-dialog v-model="dialog" max-width="500px">
@@ -142,7 +141,7 @@
 
         <template>
             <div id="jsonField"></div>
-        </template>
+        </template>       
     </div>
 </template>
 
@@ -151,77 +150,23 @@
 export default{
     jsonData: JSON,
     data: () => ({
+        //for dropdown
         users: {
             "KullanıcıA":{
                 "1":{
-                    "A":{
-                        "SINAV1":{
-                            "sınıf":"1",
-                            "sube":"A",
-                            "cevap":"ABCDEF"
-                        },
-                        "SINAV2":{
-                            "sınıf":"1",
-                            "sube":"A",
-                            "cevap":"BCDEFA"
-                        } 
-                    },
-                    "E":{
-                        "SINAV9":{
-                            "sınıf":"1",
-                            "sube":"E",
-                            "cevap":"CDEFAB"
-                        },
-                        "SINAV10":{
-                            "sınıf":"1",
-                            "sube":"E",
-                            "cevap":"DEFABC"
-                        }
-                    }
+                    "A":["SINAV1","SINAV2"],
+                    "E":["SINAV9","SINAV10"]
                 },
                 "5":{
-                    "B":{
-                        "SINAV3":{
-                            "sınıf":"5",
-                            "sube":"B",
-                            "cevap":"EFABCD"
-                        },
-                        "SINAV4":{
-                            "sınıf":"5",
-                            "sube":"B",
-                            "cevap":"FABCDE"
-                        } 
-                    }
+                    "B":["SINAV3","SINAV4"]
                 }
             },
             "KullanıcıB":{
                 "3":{
-                    "C":{
-                        "SINAV5":{
-                            "sınıf":"3",
-                            "sube":"C",
-                            "cevap":"ABCCDE"
-                        },
-                        "SINAV6":{
-                            "sınıf":"3",
-                            "sube":"C",
-                            "cevap":"BCCDEA"
-                        } 
-                    }
+                    "C":["SINAV5","SINAV6"]
                 },
                 "7":{
-                    "D":{
-                        "SINAV7":{
-                            "sınıf":"7",
-                            "sube":"D",
-                            "cevap":"CCDEAB"
-                        },
-                        "SINAV8":{
-                            "sınıf":"7",
-                            "sube":"D",
-                            "cevap":"CDEABC"
-                        } 
-                    }
+                    "D":["SINAV7", "SINAV8"]
                 }
             }
         },
@@ -236,54 +181,67 @@ export default{
         dialog: false,
         dialogDelete: false,
 
-        answerKey:[
+        getJsonData:[
             {
-                exam:"SINAV1",
-                answer:"ABCDEF"
+                "AdSoyad":[0,19],
+                "TC":[19,30],
+                "Numara":[31,36],
+                "Sınıf":[36,38],
+                "Şube":[38,41],
+                "CevapAnahtarı":[41,82]
             },
-            {
-                exam:"SINAV2",
-                answer:"BCDEFA"
-            },
-            {
-                exam:"SINAV3",
-                answer:"EFABCD"
-            },
-            {
-                exam:"SINAV4",
-                answer:"FABCDE"
-            },
-            {
-                exam:"SINAV5",
-                answer:"ABCCDE"
-            },
-            {
-                exam:"SINAV6",
-                answer:"BCCDEA"
-            },
-            {
-                exam:"SINAV7",
-                answer:"CCDEAB"
-            },
-            {
-                exam:"SINAV8",
-                answer:"CDEABC"
-            },
-            {
-                exam:"SINAV9",
-                answer:"CDEFAB"
-            },
-            {
-                exam:"SINAV10",
-                answer:"DEFABC"
-            }
+            // {
+            //     "AdSoyad":[0,19],
+            //     "Numara":[31,36],
+            //     "Sınıf":[36,38],
+            //     "Şube":[38,41],
+            //     "CevapAnahtarı":[41,82]
+            // }
         ],
-        
+
+        activeExams:[
+            {
+                examCode:"100",
+                examName:"SINAV1",
+                examDate:"05.06.2022",
+                opticNumber:"1002",
+                answerKey:"BACDEEEACCADAEDBCAACEBDDDEABCADCCEDAEBCC"
+            },
+            {
+                examCode:"101",
+                examName:"SINAV3",
+                examDate:"30.08.2022",
+                opticNumber:"1050",
+                answerKey:"ABCDEAEACCADCEEBCAACEBDADEDBCDDCAEDEEBCB"
+            },
+            {
+                examCode:"102",
+                examName:"SINAV5",
+                examDate:"19.07.2022",
+                opticNumber:"1004",
+                answerKey:"CCCCEAEACCADEEDBCAACEBDADEABCEDCCEDBEBCB"
+            },
+            {
+                examCode:"103",
+                examName:"SINAV7",
+                examDate:"21.12.2022",
+                opopticNumbertikNo:"1007",
+                answerKey:"DBABEAEACAADAEDBCDACEBDEDEABAADCCEDADBCB"
+            },
+            {
+                examCode:"104",
+                examName:"SINAV9",
+                examDate:"13.02.2022",
+                opticNumber:"1024",
+                answerKey:"ABCDDAEDCBABBCAEDEADDACADBEECDBADAECBBAE"
+            },
+        ],
 
         students:[
             {
                 id:1,
                 name:"Ayşe Korkmaz",
+                tc:"11554458748",
                 number:"123",
                 userGroup:"KullanıcıA",
                 class:"1",
@@ -294,6 +252,7 @@ export default{
             {
                 id:2,
                 name:"Ali Sefer",
+                tc:"10557188401",
                 number:"456",
                 userGroup:"KullanıcıA",
                 class:"5",
@@ -304,6 +263,7 @@ export default{
             {
                 id:3,
                 name:"Ceylan Gül",
+                tc:"11451108743",
                 number:"789",
                 userGroup:"KullanıcıB",
                 class:"3",
@@ -314,6 +274,7 @@ export default{
             {
                 id:4,
                 name:"Hulusi Doğru",
+                tc:"12584520730",
                 number:"102",
                 userGroup:"KullanıcıB",
                 class:"7",
@@ -326,13 +287,14 @@ export default{
         //txt table
         headers: [
             {text: "Sıra", value: "sıra"},
-            {text: "Öğrenci No", value: "number", align: "start", sortable: "false"},
-            {text: "Öğrenci Adı", value: "name"},
+            {text: "Numara", value: "number", align: "start", sortable: "false"},
+            {text: "Ad-Soyad", value: "name"},
             {text: "Cevap Anahtarı", value: "optic"},
             {text: "Puan", value: "point"},
             {text: "İşlem", value: "actions", sortable: false}
         ],
 
+        //for edit-dialog
         editedIndex: -1,
         editedItem: {
             number: 0,
@@ -352,11 +314,13 @@ export default{
         content: [],
     }),
     computed:{
+        //for edit-dialog
         formTitle(){
             return this.editedIndex === -1 ? 'Yeni Öğe' : 'Öğeyi Düzenle'
         },
     },
     watch: {
+        //for edit-dialog
         dialog(val){
             val || this.close()
         },
@@ -402,51 +366,62 @@ export default{
             if(this.file.name.includes(".txt")){
                 reader.onload = (res) => {
                     this.content = res.target.result;
-                    this.getStudentsData(); 
-                    this.addAutoSortNumbers();
+                    // this.getStudentsData();
+                    this.getJsonTitle();
                 };
                 reader.readAsText(this.file);
+                
             }else{
                 this.content = "check the console for file output";           
             }
         },
         getStudentsData(){
-            this.students.forEach((value) => {
-                if(this.selectedUser==value.userGroup && this.selectedGrade==value.class && this.selectedExam==value.examName){
-                    this.studentData.push(value);
-                    
-                    var lines = this.content.split('\n');
-                    for(var line = 0; line < lines.length; line++){
-                        var allLine = lines[line];
-
-                        var allLineNumber=allLine.slice(0,3);
-                        
-                        var allLineAnswer=allLine.slice(3,9);
-                        if(value.number==allLineNumber){ 
-                            value.optic=allLineAnswer;
-                        }
-                    }
-                }            
-            });  
+            let lines = this.content.split('\n');
+            for(let line = 0; line < lines.length; line++){
+                var allLine = lines[line];
+                
+                for(let i=this.getJsonData[0].AdSoyad[0];i<allLine.length && i<this.getJsonData[0].AdSoyad[1];i++){
+                    var names=allLine[i];
+                    console.log("İsimler :",names);
+                }
+                for(let i=this.getJsonData[0].TC[0];i<allLine.length && i<this.getJsonData[0].TC[1];i++){
+                    var tc=allLine[i];
+                    console.log("TCler:",tc);
+                }
+                for(let i=this.getJsonData[0].Numara[0];i<allLine.length && i<this.getJsonData[0].Numara[1];i++){
+                    var numbers=allLine[i];
+                    console.log("Numaralar:",numbers);
+                }
+                for(let i=this.getJsonData[0].Sınıf[0];i<allLine.length && i<this.getJsonData[0].Sınıf[1];i++){
+                    var classes=allLine[i];
+                    console.log("Sınıflar:",classes);
+                }
+                for(let i=this.getJsonData[0].Şube[0];i<allLine.length && i<this.getJsonData[0].Şube[1];i++){
+                    var branches1=allLine[i];
+                    console.log("Şubeler:",branches1);
+                }
+                for(let i=this.getJsonData[0].CevapAnahtarı[0];i<allLine.length && i<this.getJsonData[0].CevapAnahtarı[1];i++){
+                    var answers=allLine[i];
+                    console.log("Cevap Anahtarları:",answers);
+                }
+            } 
+            
         },
-        checkAnswer(){
-            this.studentData.forEach((key) => {
-                var studentAnswer = key.optic;
+        getJsonTitle(){
+            //tablo başlıkları için tek tek alınan json keys ı
+            // for(let k=0;k<this.getJsonData.length;k++){
+            //     const keys = Object.keys(this.getJsonData[k]);
+            //     for(let i=0;i<keys.length;i++){
+            //         this.headers.push(keys[i]);
+                    
+            //     }
+            // }
 
-                this.answerKey.forEach((index) => {
-                    if(this.selectedExam==index.exam){
-                        var answerkey = index.answer;
-
-                        let total=0;
-                        for(var i=0;i<answerkey.length;i++){
-                            if(studentAnswer[i]==answerkey[i]){
-                                total++; 
-                            }
-                        }
-                        key.point=total;
-                    }
-                });           
-            });
+                const head = Object.values(this.headers[0]);
+                for(let k=0;k<head.length;k++){
+                    console.log("headers",this.headers[k]);
+                }
+            
         },
         saveToJson(){
             this.jsonData = JSON.stringify(this.studentData);
