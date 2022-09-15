@@ -180,7 +180,7 @@ export default{
                 examCode:"103",
                 examName:"SINAV7",
                 examDate:"21.12.2022",
-                opopticNumbertikNo:"1007",
+                opticNumbertikNo:"1007",
                 answerKey:"DBABEAEACAADAEDBCDACEBDEDEABAADCCEDADBCB"
             },
             {
