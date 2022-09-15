@@ -75,68 +75,25 @@
         <!-- yeni tablo -->
         <div class="dataTable ml-7 mt-n16">
             <v-card>
-            <v-data-table            
-                id="upload"
-                :headers="headers"
-                :items="studentData"
-                class="elevation-1"
-                item-key="sıra"
-                sort-by="sıra"
-            >    
-                <template v-slot:top>
-                    <v-spacer></v-spacer>
-                        <v-dialog v-model="dialog" max-width="500px">
-                            <v-card>
-                                <v-card-title>
-                                    <span class="text-h5">{{ formTitle }}</span>
-                                </v-card-title>
+                <v-data-table            
+                    id="upload"
+                    :headers="headers"
+                    :items="studentData"
+                    class="elevation-1"
+                >   
+                    <template>
+                        <tr>
+                            <th v-for="header in headers" :key="header">
+                                {{ header.name }}
+                            </th>
+                        </tr>
+                    </template>
+                </v-data-table>
 
-                                <v-card-text>
-                                    <v-container>
-                                        <v-row>
-                                            <v-col cols="12" sm="6" md="4">
-                                                <v-text-field v-model="editedItem.number" label="Öğrenci Numarası"></v-text-field>
-                                            </v-col>
-                                            <v-col cols="12" sm="6" md="4">
-                                                <v-text-field v-model="editedItem.name" label="Öğrenci Adı"></v-text-field>
-                                            </v-col>
-                                            <v-col cols="12" sm="6" md="4">
-                                                <v-text-field v-model="editedItem.optic" label="Öğrenci Optiği"></v-text-field>
-                                            </v-col>
-                                            <v-col cols="12" sm="6" md="4">
-                                                <v-text-field v-model="editedItem.point" label="Öğrenci Puanı"></v-text-field>
-                                            </v-col>
-                                        </v-row>
-                                    </v-container>
-                                </v-card-text>
-
-                                <v-card-actions>
-                                    <v-spacer></v-spacer>
-                                    <v-btn color="blue darken-1" text @click="close">İptal</v-btn>
-                                    <v-btn color="blue darken-1" text @click="save">Kaydet</v-btn>
-                                </v-card-actions>
-                            </v-card>
-                        </v-dialog>
-
-                        <v-dialog v-model="dialogDelete" max-width="550px">
-                            <v-card>
-                                <v-card-title class="text-h5">Bu öğeyi silmek istediğinizden emin misiniz?</v-card-title>
-                                <v-card-actions>
-                                    <v-spacer></v-spacer>
-                                    <v-btn color="blue darken-1" text @click="closeDelete">İptal</v-btn>
-                                    <v-btn color="blue darken-1" text @click="deleteItemConfirm">Tamam</v-btn>
-                                    <v-spacer></v-spacer>
-                                </v-card-actions>
-                            </v-card>
-                        </v-dialog>
-                </template>
-
-                <template v-slot:[`item.actions`]="{item}">
-                    <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
-                    <v-icon small @click="deleteItem(item)">mdi-delete</v-icon>
-                </template>
-            </v-data-table>
-        </v-card>
+                <div v-for="key in headers" :key="key">
+                    {{ key }}
+                </div>
+            </v-card>
         </div>
 
         <template>
@@ -178,8 +135,6 @@ export default{
         selectedGrade:"",
         selectedBranch:"",
         selectedExam:"",
-        dialog: false,
-        dialogDelete: false,
 
         getJsonData:[
             {
@@ -286,30 +241,10 @@ export default{
 
         //txt table
         headers: [
-            {text: "Sıra", value: "sıra"},
-            {text: "Numara", value: "number", align: "start", sortable: "false"},
-            {text: "Ad-Soyad", value: "name"},
-            {text: "Cevap Anahtarı", value: "optic"},
-            {text: "Puan", value: "point"},
-            {text: "İşlem", value: "actions", sortable: false}
+            //getJsonData dan key ler geldi yerleşti
         ],
 
-        //for edit-dialog
-        editedIndex: -1,
-        editedItem: {
-            number: 0,
-            name: "-",
-            optic: "-",
-            point: 0
-        },
-        defaultItem: {
-            number: 0,
-            name: "-",
-            optic: "-",
-            point: 0
-        },
-
-        //try txt
+        // txt
         file: null,
         content: [],
     }),
@@ -409,19 +344,17 @@ export default{
         },
         getJsonTitle(){
             //tablo başlıkları için tek tek alınan json keys ı
-            // for(let k=0;k<this.getJsonData.length;k++){
-            //     const keys = Object.keys(this.getJsonData[k]);
-            //     for(let i=0;i<keys.length;i++){
-            //         this.headers.push(keys[i]);
-                    
-            //     }
-            // }
-
-                const head = Object.values(this.headers[0]);
-                for(let k=0;k<head.length;k++){
-                    console.log("headers",this.headers[k]);
+            for(let k=0;k<this.getJsonData.length;k++){
+                const keys = Object.keys(this.getJsonData[k]);
+                for(let i=0;i<keys.length;i++){
+                    // console.log("inGetJsonData :",keys[i]);
+                    this.headers.push(keys[i]);
                 }
-            
+            }
+
+            this.headers.forEach((key)=>{
+                console.log(key);
+            });
         },
         saveToJson(){
             this.jsonData = JSON.stringify(this.studentData);
@@ -433,43 +366,6 @@ export default{
                 key.sıra = no;
                 no++;
             });
-        },
-        //for v-edit-dialog
-        editItem(item){
-            this.editedIndex = this.studentData.indexOf(item)
-            this.editedItem = Object.assign({}, item)
-            this.dialog = true
-        },
-        deleteItem(item){
-            this.editedIndex = this.studentData.indexOf(item)
-            this.editedItem = Object.assign({}, item)
-            this.dialogDelete = true
-        },
-        deleteItemConfirm(){
-            this.studentData.splice(this.editedIndex, 1)
-            this.closeDelete()
-        },
-        close(){
-            this.dialog = false
-            this.$nextTick(() => {
-                this.editedItem = Object.assign({}, this.defaultItem)
-                this.editedIndex = -1
-            })
-        },
-        closeDelete(){
-            this.dialogDelete = false
-            this.$nextTick(() => {
-                this.editedItem = Object.assign({}, this.defaultItem)
-                this.editedIndex = -1
-            })
-        },
-        save(){
-            if(this.editedIndex > -1){
-                Object.assign(this.studentData[this.editedIndex], this.editedItem)
-            }else{
-                this.studentData.push(this.editedItem)
-            }
-            this.close()
         },
     },
 };

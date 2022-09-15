@@ -11,7 +11,8 @@ import ReadExam from './components/ReadExam.vue';
 export default {
   name: 'App',
   components: {
-    ReadExam
+    ReadExam,
+
 },
   data: () => ({
     //
