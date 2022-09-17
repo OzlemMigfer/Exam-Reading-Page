@@ -56,6 +56,7 @@
                         class="mt-4" 
                         color="primary" 
                         width="130px"
+                        @click="checkAnswer"
                     >
                         Değerlendir
                     </v-btn>
@@ -78,24 +79,12 @@
                 <v-data-table            
                     id="upload"
                     :headers="headers"
-                    :items="studentData"
+                    :items="itemStudents"
                     class="elevation-1"
                 >   
-                    <template>
-                        <tr>
-                            <th v-for="header in headers" :key="header">
-                                {{ header.name }}
-                            </th>
-                        </tr>
-                    </template>
                 </v-data-table>
-
-                <div v-for="key in headers" :key="key">
-                    {{ key }}
-                </div>
             </v-card>
         </div>
-
         <template>
             <div id="jsonField"></div>
         </template>       
@@ -131,6 +120,7 @@ export default{
         branches:[],
         exams:[],
         studentData:[],
+        itemStudents:[],
         selectedUser:"",
         selectedGrade:"",
         selectedBranch:"",
@@ -143,7 +133,7 @@ export default{
                 "Numara":[31,36],
                 "Sınıf":[36,38],
                 "Şube":[38,41],
-                "CevapAnahtarı":[41,82]
+                "CevapAnahtarı":[41,85],
             },
             // {
             //     "AdSoyad":[0,19],
@@ -180,7 +170,7 @@ export default{
                 examCode:"103",
                 examName:"SINAV7",
                 examDate:"21.12.2022",
-                opopticNumbertikNo:"1007",
+                opticNumber:"1007",
                 answerKey:"DBABEAEACAADAEDBCDACEBDEDEABAADCCEDADBCB"
             },
             {
@@ -232,9 +222,9 @@ export default{
                 tc:"12584520730",
                 number:"102",
                 userGroup:"KullanıcıB",
-                class:"7",
+                class:"1",
                 branchName:"D",
-                examName:"SINAV7",
+                examName:"SINAV1",
                 point:""
             }
         ],
@@ -301,8 +291,7 @@ export default{
             if(this.file.name.includes(".txt")){
                 reader.onload = (res) => {
                     this.content = res.target.result;
-                    // this.getStudentsData();
-                    this.getJsonTitle();
+                    this.getStudentsData();
                 };
                 reader.readAsText(this.file);
                 
@@ -310,51 +299,74 @@ export default{
                 this.content = "check the console for file output";           
             }
         },
-        getStudentsData(){
+        getStudentsData(){   
             let lines = this.content.split('\n');
             for(let line = 0; line < lines.length; line++){
                 var allLine = lines[line];
-                
-                for(let i=this.getJsonData[0].AdSoyad[0];i<allLine.length && i<this.getJsonData[0].AdSoyad[1];i++){
-                    var names=allLine[i];
-                    console.log("İsimler :",names);
-                }
-                for(let i=this.getJsonData[0].TC[0];i<allLine.length && i<this.getJsonData[0].TC[1];i++){
-                    var tc=allLine[i];
-                    console.log("TCler:",tc);
-                }
-                for(let i=this.getJsonData[0].Numara[0];i<allLine.length && i<this.getJsonData[0].Numara[1];i++){
-                    var numbers=allLine[i];
-                    console.log("Numaralar:",numbers);
-                }
-                for(let i=this.getJsonData[0].Sınıf[0];i<allLine.length && i<this.getJsonData[0].Sınıf[1];i++){
-                    var classes=allLine[i];
-                    console.log("Sınıflar:",classes);
-                }
-                for(let i=this.getJsonData[0].Şube[0];i<allLine.length && i<this.getJsonData[0].Şube[1];i++){
-                    var branches1=allLine[i];
-                    console.log("Şubeler:",branches1);
-                }
-                for(let i=this.getJsonData[0].CevapAnahtarı[0];i<allLine.length && i<this.getJsonData[0].CevapAnahtarı[1];i++){
-                    var answers=allLine[i];
-                    console.log("Cevap Anahtarları:",answers);
+
+                for(let k=0;k<this.getJsonData.length;k++){
+                    var AdSoyad=allLine.slice(this.getJsonData[k].AdSoyad[0],this.getJsonData[k].AdSoyad[1]);
+                    var TC=allLine.slice(this.getJsonData[k].TC[0],this.getJsonData[k].TC[1]);
+                    var Numara=allLine.slice(this.getJsonData[k].Numara[0],this.getJsonData[k].Numara[1]);
+                    var Sınıf=allLine.slice(this.getJsonData[k].Sınıf[0],this.getJsonData[k].Sınıf[1]);
+                    var Şube=allLine.slice(this.getJsonData[k].Şube[0],this.getJsonData[k].Şube[1]);
+                    var CevapAnahtarı=allLine.slice(this.getJsonData[k].CevapAnahtarı[0],this.getJsonData[k].CevapAnahtarı[1]);
+
+                    //Seçilen sınıfa göre tabloya veri gönderildi
+                    for(let i=0;i<Sınıf.length;i++){
+                        if(Sınıf[i] == this.selectedGrade){
+                            this.itemStudents.push({AdSoyad,TC,Numara,Sınıf,Şube,CevapAnahtarı});
+                        }
+                    }
                 }
             } 
-            
-        },
-        getJsonTitle(){
-            //tablo başlıkları için tek tek alınan json keys ı
+            //tablo başlıkları için tek tek alınan json keys leri
             for(let k=0;k<this.getJsonData.length;k++){
                 const keys = Object.keys(this.getJsonData[k]);
                 for(let i=0;i<keys.length;i++){
-                    // console.log("inGetJsonData :",keys[i]);
-                    this.headers.push(keys[i]);
+                    this.headers.push({text:keys[i], value:keys[i]});                   
                 }
-            }
+            } 
+            this.headers.push({text:"Puan" , value:"Puan"});       
+        },
+        checkAnswer(){             
+            this.itemStudents.forEach((key)=>{
+                var answers = key.CevapAnahtarı;//tablodaki tüm cevap anahtarları--öğrencilerin
+                
+                var answerClass1_1 = answers.slice(0,20);//her bir öğrenci cevaplarının ilk 20 soru cevabı-tarih
+                var answerClass1_2 = answers.slice(20,40);//-coğrafya son 20 soru cevabı öğrencinin
 
-            this.headers.forEach((key)=>{
-                console.log(key);
+                // console.log("Öğrenci tarih :",answerClass1_1,"------","Öğrenci Coğrafya :",answerClass1_2);
+
+                this.activeExams.forEach((value)=>{
+                    if(this.selectedExam == value.examName){
+                        var keyExam1_1 = value.answerKey.slice(0,20);
+                        var keyExam1_2 = value.answerKey.slice(20,40);
+
+                        // console.log("CAnahtar Tarih :",keyExam1_1,"------","CAnahtar Coğrafya :",keyExam1_2);
+ 
+                        var pointClass1_1 = 0, pointClass1_2 = 0, totalPoint = 0;
+                        for(let i =0;i<=keyExam1_1.length;i++){
+                            if(answerClass1_1[i] == keyExam1_1[i]){
+                               var point1 = pointClass1_1++;
+                               var fullPoint1 = point1*(1.33);//tarih puanı
+                            }
+                            if(answerClass1_2[i] == keyExam1_2[i]){
+                               var point2 = pointClass1_2++;
+                               var fullPoint2 = point2*(1.34);//coğrafya puanı
+                            }
+                            totalPoint = fullPoint1 + fullPoint2;
+                        }       
+                        
+                        console.log("puan tarih :",fullPoint1);
+                        console.log("puan coğrafya :",fullPoint2);
+                        console.log("puan toplam :",totalPoint.toFixed(2));
+                        var Puan = totalPoint.toFixed(2);
+                    } 
+                    this.itemStudents.push({Puan});
+                });       
             });
+            
         },
         saveToJson(){
             this.jsonData = JSON.stringify(this.studentData);
